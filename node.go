@@ -7,13 +7,13 @@ import (
 )
 
 type hasher func() hash.Hash
+type Socket string
 
 type Config struct {
 	Hash     hasher
 	HashSize int
 
-	IP   string
-	Addr string
+	Socket Socket
 
 	StabilizeMin time.Duration
 	StabilizeMax time.Duration
