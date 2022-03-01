@@ -10,19 +10,13 @@ type store struct {
 	mu   sync.RWMutex
 }
 
-func (s store) hashKey(key string) []byte {
-	s.Hash().Write([]byte(key))
-
-	return s.Hash().Sum(nil)
-}
-
 func (s *store) getKey(k hashKey) ([]byte, error) {
 	s.mu.RLock()
 	val, exists := s.data[k]
 	s.mu.RUnlock()
 
 	if !exists {
-		return nil, ERR_KEY_NOT_FOUND
+		return nil, errKeyNotFound
 	}
 
 	return []byte(val), nil

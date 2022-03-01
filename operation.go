@@ -31,7 +31,7 @@ func (o Operations) SetSuccessor(succ *Node) error {
 }
 
 func (o Operations) GetKey(string) (*GetResponse, error) {
-
+	return nil, nil
 }
 
 func (o Operations) SetKey(string, string) error {

@@ -1,15 +1,14 @@
 package fingers
 
 import (
+	"crypto/sha1"
 	"fmt"
-	"hash"
 	"net"
 	"net/rpc"
 	"sync"
 	"time"
 )
 
-type hasher func() hash.Hash
 type Socket string
 
 type Config struct {
@@ -38,12 +37,22 @@ type Node struct {
 
 	chShutdown    chan struct{} // TODO: assess best type
 	lastStablized time.Time
+
+	ID string
 }
 
-func NewNode(cfg *Config) (*Node, error) {
-	// TODO: validation of config
+func (c *Config) Validate() error {
+	return nil
+}
+
+func NewNode(id string, cfg *Config) (*Node, error) {
+	errVa := cfg.Validate()
+	if errVa != nil {
+		return nil, errVa
+	}
 
 	return &Node{
+		ID:         string(hashWith(sha1.New(), id)),
 		chShutdown: make(chan struct{}),
 	}, nil
 }
@@ -79,4 +88,8 @@ func (n *Node) Start(o *Operations) error {
 	}()
 
 	return nil
+}
+
+func (n *Node) Stop() {
+	n.chShutdown <- struct{}{}
 }
