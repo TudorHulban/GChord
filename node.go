@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"net/rpc"
+	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -45,14 +47,23 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-func NewNode(id string, cfg *Config) (*Node, error) {
+func NewNode(cfg *Config) (*Node, error) {
 	errVa := cfg.Validate()
 	if errVa != nil {
 		return nil, errVa
 	}
 
+	hostname, errrHo := os.Hostname()
+	if errrHo != nil {
+		return nil, errrHo
+	}
+
+	if len(strings.Trim(hostname, " ")) == 0 {
+		return nil, fmt.Errorf("hostname for node listening on socket %s is missing", cfg.Socket)
+	}
+
 	return &Node{
-		ID:         string(hashWith(sha1.New(), id)),
+		ID:         string(hashWith(sha1.New(), hostname)),
 		chShutdown: make(chan struct{}),
 	}, nil
 }

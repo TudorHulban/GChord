@@ -30,9 +30,9 @@ func (o Operations) SetSuccessor(succ *Node) error {
 	return nil
 }
 
-func (o Operations) GetKey(string) (*GetResponse, error) {
-	return nil, nil
-}
+// func (o Operations) GetKey(string) (*GetResponse, error) {
+// 	return nil, nil
+// }
 
 func (o Operations) SetKey(string, string) error {
 	return nil
@@ -42,9 +42,9 @@ func (o Operations) DeleteKey(string) error {
 	return nil
 }
 
-func (o Operations) RequestKeys([]byte, []byte) ([]*KV, error) {
-	return nil, nil
-}
+// func (o Operations) RequestKeys([]byte, []byte) ([]*KV, error) {
+// 	return nil, nil
+// }
 
 func (o Operations) DeleteKeys([]string) error {
 	return nil
