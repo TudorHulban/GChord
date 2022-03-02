@@ -2,7 +2,9 @@ package fingers
 
 import (
 	"crypto/sha1"
+	"errors"
 	"fmt"
+	"net"
 	"net/rpc"
 	"os"
 	"strings"
@@ -10,13 +12,11 @@ import (
 	"time"
 )
 
-type Socket string
-
 type Config struct {
 	Hash     hasher
 	HashSize int
 
-	Socket Socket
+	Socket string
 
 	StabilizeMin time.Duration
 	StabilizeMax time.Duration
@@ -73,10 +73,14 @@ func (n *Node) Start(o *Operations) error {
 		return errRe
 	}
 
-	// _, errRes := net.ResolveTCPAddr("tcp", string(n.cfg.Socket))
-	// if errRes != nil {
-	// 	return errRes
-	// }
+	tcpAddr, errRes := net.ResolveTCPAddr("tcp", n.cfg.Socket)
+	if errRes != nil {
+		return errRes
+	}
+
+	if tcpAddr == nil {
+		return errors.New("tcpAddr is nil")
+	}
 
 	// _, errLis := net.ListenTCP("tcp", tcpAddr)
 	// if errLis != nil {

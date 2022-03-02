@@ -8,7 +8,7 @@ import (
 
 func TestNodeCo(t *testing.T) {
 	cfg := &Config{
-		Socket: "0.0.0.0:8000",
+		Socket: ":8000",
 	}
 
 	require.NoError(t, cfg.Validate())

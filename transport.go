@@ -11,7 +11,7 @@ import (
 // https://ipfs.io/ipfs/QmfYeDhGH9bZzihBUDEQbCbTc5k5FZKURMUoUvfmc27BwL/rpc/go_rpc.html
 
 type Transport struct {
-	Connections map[Socket]*Connection
+	Connections map[string]*Connection
 	mu          sync.RWMutex
 
 	maxIdle time.Duration

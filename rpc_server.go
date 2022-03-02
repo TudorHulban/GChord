@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"net"
 	"net/rpc"
+	"time"
 )
 
-func NewRPCServer(logic interface{}, s Socket) error {
+// TODO: move to goroutine rpc accept
+func NewRPCServer(logic interface{}, sock string) error {
 	rpc.Register(logic)
 
-	tcpAddr, errRes := net.ResolveTCPAddr("tcp", string(s))
+	tcpAddr, errRes := net.ResolveTCPAddr("tcp", sock)
 	if errRes != nil {
 		return fmt.Errorf("resolve TCP Addr: %w", errRes)
 	}
@@ -19,9 +21,22 @@ func NewRPCServer(logic interface{}, s Socket) error {
 		return fmt.Errorf("listen TCP: %s", errRes)
 	}
 
-	fmt.Printf("listening on port %s\n", string(s))
+	fmt.Printf("listening on port %s\n", sock)
 
-	for {
-		rpc.Accept(listener)
+	ticker := time.NewTicker(300 * time.Millisecond)
+
+	select {
+	case <-ticker.C:
+		{
+			fmt.Println("RPC listening ended")
+		}
+
+	default:
+		{
+			fmt.Println("RPC listening started")
+			rpc.Accept(listener)
+		}
 	}
+
+	return nil
 }
