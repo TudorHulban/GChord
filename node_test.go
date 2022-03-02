@@ -14,9 +14,9 @@ func TestNodeCo(t *testing.T) {
 	require.NoError(t, cfg.Validate())
 
 	n, errCo := NewNode(cfg)
-	require.NoError(t, errCo)
+	require.NoError(t, errCo, "constructor issues")
 	require.NotNil(t, n)
 
 	var o Operations
-	require.NoError(t, n.Start(&o))
+	require.NoError(t, n.Start(&o), "start node")
 }

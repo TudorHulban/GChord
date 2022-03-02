@@ -3,7 +3,6 @@ package fingers
 import (
 	"crypto/sha1"
 	"fmt"
-	"net"
 	"net/rpc"
 	"os"
 	"strings"
@@ -69,34 +68,37 @@ func NewNode(cfg *Config) (*Node, error) {
 }
 
 func (n *Node) Start(o *Operations) error {
-	rpc.Register(&o)
-
-	tcpAddr, errRes := net.ResolveTCPAddr("tcp", string(n.cfg.Socket))
-	if errRes != nil {
-		return errRes
+	errRe := rpc.Register(o)
+	if errRe != nil {
+		return errRe
 	}
 
-	listener, errLis := net.ListenTCP("tcp", tcpAddr)
-	if errLis != nil {
-		return errLis
-	}
+	// _, errRes := net.ResolveTCPAddr("tcp", string(n.cfg.Socket))
+	// if errRes != nil {
+	// 	return errRes
+	// }
 
-	go func() {
-		fmt.Printf("listening on port %s\n", n.cfg.Socket)
+	// _, errLis := net.ListenTCP("tcp", tcpAddr)
+	// if errLis != nil {
+	// 	return errLis
+	// }
 
-		select {
-		case sign := <-n.chShutdown:
-			{
-				fmt.Printf("\nshutting node on received: %s.\n", sign)
-				close(n.chShutdown)
-			}
+	// go func() {
+	// 	fmt.Printf("listening on port %s\n", n.cfg.Socket)
 
-		default:
-			{
-				rpc.Accept(listener)
-			}
-		}
-	}()
+	// 	select {
+	// 	case sign := <-n.chShutdown:
+	// 		{
+	// 			fmt.Printf("\nshutting node on received: %s.\n", sign)
+	// 			close(n.chShutdown)
+	// 		}
+
+	// 	default:
+	// 		{
+	// 			// rpc.Accept(listener)
+	// 		}
+	// 	}
+	// }()
 
 	return nil
 }
