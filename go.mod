@@ -1,4 +1,4 @@
-module gchord
+module github.com/TudorHulban/GChord
 
 go 1.17
 

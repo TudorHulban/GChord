@@ -44,6 +44,10 @@ func (s *RPCServer) Start() error {
 	return nil
 }
 
+func (s *RPCServer) GetReadyChannel() chan struct{} {
+	return s.chReady
+}
+
 func (s *RPCServer) Stop() {
 	s.chStop <- struct{}{}
 }

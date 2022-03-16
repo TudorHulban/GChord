@@ -2,51 +2,38 @@ package fingers
 
 import (
 	"crypto/sha1"
-	"errors"
 	"fmt"
-	"net"
-	"net/rpc"
 	"os"
 	"strings"
-	"sync"
-	"time"
 )
 
-type Config struct {
-	Hash     hasher
-	HashSize int
-
-	Socket string
-
-	StabilizeMin time.Duration
-	StabilizeMax time.Duration
-
-	Timeout time.Duration
-	MaxIdle time.Duration
-}
-
 type Node struct {
-	cfg *Config
+	s *RPCServer
 
-	predecessor *Node
-	successor   *Node
-	mu          sync.RWMutex
+	// predecessor *Node
+	// successor   *Node
+	// mu          sync.RWMutex
 
-	fingerTable fingerTable
-	storage     store
-	transport   Transport
+	// fingerTable fingerTable
+	// storage     store
+	// transport   Transport
 
-	chShutdown    chan struct{} // TODO: assess best type
-	lastStablized time.Time
+	// lastStablized time.Time
 
 	ID string
 }
 
-func (c *Config) Validate() error {
-	return nil
+func NewEchoNode(sock string) (*Node, error) {
+	c := Config{
+		Socket: sock,
+	}
+
+	var o Operations
+
+	return NewNode(&c, o)
 }
 
-func NewNode(cfg *Config) (*Node, error) {
+func NewNode(cfg *Config, logic interface{}) (*Node, error) {
 	errVa := cfg.Validate()
 	if errVa != nil {
 		return nil, errVa
@@ -61,52 +48,25 @@ func NewNode(cfg *Config) (*Node, error) {
 		return nil, fmt.Errorf("hostname for node listening on socket %s is missing", cfg.Socket)
 	}
 
+	s, errNew := NewRPCServer(cfg.Socket, logic)
+	if errNew != nil {
+		return nil, errNew
+	}
+
 	return &Node{
-		ID:         string(hashWith(sha1.New(), hostname)),
-		chShutdown: make(chan struct{}),
+		ID: string(hashWith(sha1.New(), hostname)),
+		s:  s,
 	}, nil
 }
 
-func (n *Node) Start(o *Operations) error {
-	errRe := rpc.Register(o)
-	if errRe != nil {
-		return errRe
-	}
-
-	tcpAddr, errRes := net.ResolveTCPAddr("tcp", n.cfg.Socket)
-	if errRes != nil {
-		return errRes
-	}
-
-	if tcpAddr == nil {
-		return errors.New("tcpAddr is nil")
-	}
-
-	// _, errLis := net.ListenTCP("tcp", tcpAddr)
-	// if errLis != nil {
-	// 	return errLis
-	// }
-
-	// go func() {
-	// 	fmt.Printf("listening on port %s\n", n.cfg.Socket)
-
-	// 	select {
-	// 	case sign := <-n.chShutdown:
-	// 		{
-	// 			fmt.Printf("\nshutting node on received: %s.\n", sign)
-	// 			close(n.chShutdown)
-	// 		}
-
-	// 	default:
-	// 		{
-	// 			// rpc.Accept(listener)
-	// 		}
-	// 	}
-	// }()
-
+func (n *Node) TalkTo(ipcPort string) error {
 	return nil
 }
 
+func (n *Node) Start() error {
+	return n.s.Start()
+}
+
 func (n *Node) Stop() {
-	n.chShutdown <- struct{}{}
+	n.s.Stop()
 }

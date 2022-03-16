@@ -2,16 +2,23 @@ package fingers
 
 type Operations struct{}
 
-type Args struct{}
-
 type KV struct {
 	Key   []byte
 	Value []byte
 }
 
-func (o *Operations) GetSuccessor(_ *Args, reply *Node) error {
+func (o *Operations) Echo(req *KV, resp *KV) error {
+	resp = &KV{
+		Key:   req.Key,
+		Value: req.Value,
+	}
+
 	return nil
 }
+
+// func (o *Operations) GetSuccessor(_ *Args, reply *Node) error {
+// 	return nil
+// }
 
 // func (o *Operations) FindSuccessor(_ *Args, reply *Node) error {
 // 	return nil
