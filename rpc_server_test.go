@@ -10,6 +10,6 @@ func TestNewRPCServ(t *testing.T) {
 	sock := ":8000"
 	var o Operations
 
-	require.NoError(t, NewRPCServer(&o, sock))
-
+	_, errNew := NewRPCServer(sock, &o)
+	require.NoError(t, errNew)
 }

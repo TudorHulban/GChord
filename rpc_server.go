@@ -4,39 +4,60 @@ import (
 	"fmt"
 	"net"
 	"net/rpc"
-	"time"
 )
 
-// TODO: move to goroutine rpc accept
-func NewRPCServer(logic interface{}, sock string) error {
-	rpc.Register(logic)
+type RPCServer struct {
+	logic   interface{}
+	chStop  chan struct{}
+	chReady chan struct{}
 
-	tcpAddr, errRes := net.ResolveTCPAddr("tcp", sock)
+	port string
+}
+
+func (s *RPCServer) Start() error {
+	tcpAddr, errRes := net.ResolveTCPAddr("tcp", s.port)
 	if errRes != nil {
 		return fmt.Errorf("resolve TCP Addr: %w", errRes)
 	}
 
 	listener, errLis := net.ListenTCP("tcp", tcpAddr)
 	if errLis != nil {
-		return fmt.Errorf("listen TCP: %s", errRes)
+		return fmt.Errorf("listen TCP: %w", errLis)
 	}
 
-	fmt.Printf("listening on port %s\n", sock)
+	rpc.Register(s.logic)
 
-	ticker := time.NewTicker(300 * time.Millisecond)
+	fmt.Printf("listening on port %s\n", s.port)
 
-	select {
-	case <-ticker.C:
-		{
-			fmt.Println("RPC listening ended")
-		}
+	go rpc.Accept(listener)
 
-	default:
-		{
-			fmt.Println("RPC listening started")
-			rpc.Accept(listener)
-		}
+	s.chReady <- struct{}{}
+
+	for range s.chStop {
+		listener.Close()
+		fmt.Println("exiting loop...")
+		break
 	}
+
+	fmt.Printf("stopped listening on port %s\n", s.port)
 
 	return nil
+}
+
+func (s *RPCServer) Stop() {
+	s.chStop <- struct{}{}
+}
+
+func (s *RPCServer) CleanUp() {
+	close(s.chReady)
+	close(s.chStop)
+}
+
+func NewRPCServer(port string, logic interface{}) (*RPCServer, error) {
+	return &RPCServer{
+		logic:   logic,
+		port:    port,
+		chStop:  make(chan struct{}),
+		chReady: make(chan struct{}),
+	}, nil
 }
